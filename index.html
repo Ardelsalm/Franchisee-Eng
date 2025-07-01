@@ -51,6 +51,26 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             transform: translateY(-2px); /* Slight lift on active */
         }
+        /* New tab-button-small for Key Investor Benefits */
+        .tab-button-small {
+            background-color: #F0EFEA;
+            color: #044222;
+            border-color: #DCD9D0;
+            padding: 0.5rem 1rem; /* Smaller padding */
+            font-weight: 600;
+            border-radius: 0.5rem;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            font-size: 0.875rem; /* Smaller font size (sm) */
+        }
+        .tab-button-small.active {
+            background-color: #044222;
+            color: #FFFFFF;
+            border-color: #044222;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
         /* Image fitting for showroom photos */
         .showroom-img {
             width: 100%;
@@ -89,11 +109,29 @@
                 <img src="https://i.postimg.cc/26hjyxLK/Sabhan-Logo-3.png" alt="Sabhan Furniture Logo" class="h-24 sm:h-28 md:h-32">
             </div>
             <h1 class="text-4xl md:text-6xl font-bold leading-tight mb-4 text-brand-primary">Your Path to Profit: Sabhan Furniture Franchise</h1>
-            <!-- Correction 1: Updated subtitle to '₹25 Lakhs' -->
             <p class="text-xl md:text-2xl text-gray-700 max-w-4xl mx-auto">Partner with a proven leader in Kerala's furniture market. Invest from just <span class="font-bold text-brand-secondary">₹25 Lakhs</span> for lifelong returns.</p>
             <div class="mt-8 flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-4">
                 <a href="#investment-models" class="bg-brand-primary text-white font-bold py-3 px-6 rounded-full text-lg hover:bg-green-800 transition shadow-lg w-full md:w-auto transform hover:scale-105">Explore Models</a>
                 <a href="#roi-calculator" class="bg-brand-secondary text-white font-bold py-3 px-6 rounded-full text-lg hover:bg-yellow-600 transition shadow-lg w-full md:w-auto transform hover:scale-105">Calculate Your ROI</a>
+            </div>
+        </section>
+
+        <!-- Key Investor Benefits Section -->
+        <section id="key-investor-benefits" class="py-10 px-4 md:px-8 bg-brand-light">
+            <div class="max-w-4xl mx-auto bg-white p-6 rounded-xl shadow-lg">
+                <h2 class="text-2xl font-bold text-brand-primary mb-6 text-center">Key Investor Benefits</h2>
+                <div class="flex flex-wrap justify-center gap-4 mb-6" id="investorBenefitTabs">
+                    <button class="tab-button-small active" data-tab="roi">High ROI</button>
+                    <button class="tab-button-small" data-tab="profit-share">Profit Share</button>
+                    <button class="tab-button-small" data-tab="asset-ownership">Asset Ownership</button>
+                    <button class="tab-button-small" data-tab="exclusive-offer">Exclusive Offer</button>
+                </div>
+                <div id="investorBenefitContent" class="text-center text-gray-700 text-lg">
+                    <p id="roi-content" class="tab-content active"><span class="font-bold text-brand-primary" id="dynamic-roi"></span> on Your Investment (depending on the franchisee type, location, and initial investment).</p>
+                    <p id="profit-share-content" class="tab-content hidden"><span class="font-bold text-brand-primary">Up to 70% Profit Share</span> for the investor.</p>
+                    <p id="asset-ownership-content" class="tab-content hidden"><span class="font-bold text-brand-primary">Complete Ownership</span> of the branch, inventory, and assets for the investor.</p>
+                    <p id="exclusive-offer-content" class="tab-content hidden"><span class="font-bold text-brand-primary">Available only on selected locations</span> for the first 5 franchisees.</p>
+                </div>
             </div>
         </section>
 
@@ -368,7 +406,6 @@
         <section id="roi-calculator" class="py-16 px-4 md:px-8 bg-brand-light rounded-xl shadow-xl mx-4 md:mx-auto max-w-7xl">
             <div class="text-center max-w-4xl mx-auto mb-12">
                 <h2 class="text-4xl font-bold text-brand-primary mb-4">Project Your ROI: What If Scenarios</h2>
-                <!-- Correction 2 & 3: Removed Gross Profit percentage and "cumulative investor profits" text -->
                 <p class="text-lg text-gray-600">Select a model and a sales scenario below to view projected break-even times. All projections are based on operational expenses as per Indian accounting standards.</p>
             </div>
 
@@ -412,7 +449,7 @@
                     <div class="bg-brand-secondary text-white rounded-full h-12 w-12 flex-shrink-0 flex items-center justify-center text-2xl font-bold">✓</div>
                     <div>
                         <h3 class="text-xl font-bold text-gray-800">Safest Investment Option</h3>
-                        <p class="text-gray-600 mt-1">Low capital at risk; franchisor owns inventory & assets, with a clear exit strategy.</p>
+                        <p class="text-gray-600 mt-1">Low capital at risk; franchisee owns inventory & assets, with a clear exit strategy.</p>
                     </div>
                 </div>
                 <div class="flex items-start space-x-4 p-4 bg-brand-light rounded-lg shadow-sm">
@@ -517,7 +554,185 @@
         values: [6000000, 2000000, 2950000, 1200000, 1000000, 1250000, 800000] 
     };
 
-    // --- Chart Initialization for each model's investment breakdown ---
+    // Function to get ROI text based on selected model (MOVED OUT OF DOMContentLoaded)
+    function getRoiTextForModel(modelType) {
+        switch (modelType) {
+            case 'essential':
+                return '10%+ Return';
+            case 'signature':
+                return '12%+ Return';
+            case 'experience':
+                return '14%+ Return';
+            default:
+                return '14%+ Return'; // Default for safety
+        }
+    }
+
+    // --- ROI Calculation Logic for All Models ---
+    // Net Profit Before Investor Share Rate is derived from 4119406.78 / (6000000 * 12) from Experience Hub's Excel
+    const netProfitBeforeInvestorShareRate = 0.057213983; 
+
+    const ROI_MODELS_CONFIG = {
+        essential: {
+            totalInvestment: 11100000 - 1200000, // 1.11 Cr - 12 Lakhs Lease Advance = 99 Lakhs
+            investorProfitShare: 0.70,
+            salesScenarios: { average: 4000000, medium: 6000000, high: 8000000 }
+        },
+        signature: {
+            totalInvestment: 13200000 - 1200000, // 1.32 Cr - 12 Lakhs Lease Advance = 1.2 Cr
+            investorProfitShare: 0.70,
+            salesScenarios: { average: 5000000, medium: 7000000, high: 9000000 }
+        },
+        experience: {
+            totalInvestment: 15200000 - 1200000, // 1.52 Cr - 12 Lakhs Lease Advance = 1.4 Cr
+            investorProfitShare: 0.70,
+            salesScenarios: { average: 6000000, medium: 8000000, high: 10000000 }
+        }
+    };
+
+    function calculateROI(modelType, monthlyRevenueIncludingGST) {
+        const config = ROI_MODELS_CONFIG[modelType];
+        const annualData = [];
+        let cumulativeInvestorProfit = 0;
+        let breakEvenMonth = -1;
+
+        const currentAnnualNetProfitBeforeInvestorShare = monthlyRevenueIncludingGST * 12 * netProfitBeforeInvestorShareRate;
+        const annualInvestorShare = currentAnnualNetProfitBeforeInvestorShare * config.investorProfitShare;
+        
+        // Loop up to 10 years (120 months) for break-even calculation
+        for (let month = 1; month <= 120; month++) { 
+            const investorShareMonthlyAccrual = annualInvestorShare / 12;
+            cumulativeInvestorProfit += investorShareMonthlyAccrual;
+            
+            if (breakEvenMonth === -1 && cumulativeInvestorProfit >= config.totalInvestment) {
+                breakEvenMonth = month;
+            }
+
+            if (month % 12 === 0 && month <= 60) { // Only store up to 5 years for chart data
+                annualData.push(cumulativeInvestorProfit);
+            }
+        }
+
+        const finalCumulativeProfitForDisplay = annualData.length > 0 ? annualData[annualData.length - 1] : 0;
+
+        let breakEvenDisplay = '';
+        if (breakEvenMonth !== -1) {
+            const years = Math.floor(breakEvenMonth / 12);
+            const months = breakEvenMonth % 12;
+            
+            if (years > 0 && months > 0) {
+                breakEvenDisplay = `${years} years and ${months} months`;
+            } else if (years > 0) {
+                breakEvenDisplay = `${years} years`;
+            } else {
+                breakEvenDisplay = `${months} months`;
+            }
+        } else {
+            // If breakEvenMonth is still -1 after 120 months (10 years), then it's beyond 10 years
+            breakEvenDisplay = 'Beyond 10 years'; 
+        }
+
+        return { profitData: annualData, breakEvenTime: breakEvenDisplay, cumulativeFinalProfit: finalCumulativeProfitForDisplay };
+    }
+
+    // --- ROI Calculator for the Common Presentation (Interactive Model Selector) ---
+    const roiProjectionCtxCommon = document.getElementById('roiProjectionChart'); 
+    let roiChartCommon;
+
+    function formatCurrency(value) {
+        // Formats values into Lakhs with 2 decimal places, adding '₹' prefix.
+        return `₹${(value / 100000).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Lakhs`;
+    }
+
+    function updateRoiChartCommon(modelType, salesScenarioKey) {
+        const modelConfig = ROI_MODELS_CONFIG[modelType];
+        const monthlyRevenue = modelConfig.salesScenarios[salesScenarioKey];
+        const result = calculateROI(modelType, monthlyRevenue);
+        
+        const breakEvenDisplayElement = document.getElementById('breakEvenDisplay');
+
+        if (breakEvenDisplayElement) {
+            breakEvenDisplayElement.textContent = result.breakEvenTime;
+        }
+
+        if (roiProjectionCtxCommon) { 
+            if (roiChartCommon) {
+                roiChartCommon.data.datasets[0].data = result.profitData;
+                roiChartCommon.update();
+            } else {
+                roiChartCommon = new Chart(roiProjectionCtxCommon.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: ['Year 1', 'Year 2', 'Year 3', 'Year 4', 'Year 5'],
+                        datasets: [{
+                            label: 'Cumulative Investor Profit',
+                            data: result.profitData,
+                            fill: true,
+                            backgroundColor: 'rgba(225, 169, 49, 0.1)',
+                            borderColor: '#E1A931',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            pointBackgroundColor: '#E1A931',
+                            pointRadius: 5
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: (context) => `Cumulative Profit: ${formatCurrency(context.raw)}`
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: (value) => `${formatCurrency(value).replace(' Lakhs', 'L')}` // Shorten "Lakhs" to "L" on y-axis
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false // Hide x-axis grid lines for cleaner look
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+    }
+
+    // Initial setup for the Common ROI Calculator: Updates sales buttons and triggers chart update
+    function updateScenarioButtons() {
+        const modelSelector = document.getElementById('modelSelector'); 
+        const selectedModel = modelSelector.value;
+        const scenarios = ROI_MODELS_CONFIG[selectedModel].salesScenarios;
+
+        const salesScenarioButtons = document.querySelectorAll('#salesScenarioButtons .tab-button');
+        
+        salesScenarioButtons[0].textContent = `Average Sales (₹${(scenarios.average / 100000).toFixed(0)} Lakhs)`;
+        salesScenarioButtons[0].dataset.scenario = 'average';
+        salesScenarioButtons[1].textContent = `Medium Sales (₹${(scenarios.medium / 100000).toFixed(0)} Lakhs)`;
+        salesScenarioButtons[1].dataset.scenario = 'medium';
+        salesScenarioButtons[2].textContent = `High Sales (₹${(scenarios.high / 100000).toFixed(0)} Lakhs)`;
+        salesScenarioButtons[2].dataset.scenario = 'high';
+
+        // Set default active to average and update chart
+        salesScenarioButtons.forEach(btn => btn.classList.remove('active'));
+        salesScenarioButtons[0].classList.add('active');
+        updateRoiChartCommon(selectedModel, 'average');
+
+        // Also update the dynamic ROI text in the "Key Investor Benefits" section
+        const dynamicRoiDisplay = document.getElementById('dynamic-roi');
+        if (dynamicRoiDisplay) {
+            dynamicRoiDisplay.textContent = getRoiTextForModel(selectedModel);
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         // Essential Chart
         const essentialChartCanvas = document.getElementById('essentialChart');
@@ -670,167 +885,41 @@
             });
         });
 
+        // Initialize investor benefits tabs
+        const investorBenefitTabs = document.querySelectorAll('#investorBenefitTabs .tab-button-small');
+        const investorBenefitContent = document.getElementById('investorBenefitContent');
+        const dynamicRoiDisplay = document.getElementById('dynamic-roi');
+        
+        investorBenefitTabs.forEach(button => {
+            button.addEventListener('click', () => {
+                investorBenefitTabs.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+
+                const tabId = button.dataset.tab;
+                investorBenefitContent.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.add('hidden');
+                });
+                document.getElementById(`${tabId}-content`).classList.remove('hidden');
+
+                // Update dynamic ROI when "High ROI" tab is active
+                if (tabId === 'roi') {
+                    const selectedModel = modelSelectorElement ? modelSelectorElement.value : 'experience';
+                    const roiText = getRoiTextForModel(selectedModel);
+                    dynamicRoiDisplay.textContent = roiText;
+                }
+            });
+        });
+
+        // Initial setting of dynamic ROI text based on default selected model
+        if (dynamicRoiDisplay) {
+            const initialSelectedModel = modelSelectorElement ? modelSelectorElement.value : 'experience';
+            dynamicRoiDisplay.textContent = getRoiTextForModel(initialSelectedModel);
+        }
+
+
         // Initial call only after DOM is loaded and elements are guaranteed to exist
         updateScenarioButtons(); 
     });
-
-
-    // --- ROI Calculation Logic for All Models ---
-    // Net Profit Before Investor Share Rate is derived from 4119406.78 / (6000000 * 12) from Experience Hub's Excel
-    const netProfitBeforeInvestorShareRate = 0.057213983; 
-
-    const ROI_MODELS_CONFIG = {
-        essential: {
-            totalInvestment: 9900000, // 1.11 Cr - 12Lakhs Lease Advance
-            investorProfitShare: 0.70,
-            salesScenarios: { average: 4000000, medium: 6000000, high: 8000000 }
-        },
-        signature: {
-            totalInvestment: 12000000, // 1.32 Cr - 12 Lakhs Lease Advance
-            investorProfitShare: 0.70,
-            salesScenarios: { average: 5000000, medium: 7000000, high: 9000000 }
-        },
-        experience: {
-            totalInvestment: 14000000, // 1.52 Cr - 12 Lakhs Lease Advance
-            investorProfitShare: 0.70,
-            salesScenarios: { average: 6000000, medium: 8000000, high: 10000000 }
-        }
-    };
-
-    function calculateROI(modelType, monthlyRevenueIncludingGST) {
-        const config = ROI_MODELS_CONFIG[modelType];
-        const annualData = [];
-        let cumulativeInvestorProfit = 0;
-        let breakEvenMonth = -1;
-
-        const currentAnnualNetProfitBeforeInvestorShare = monthlyRevenueIncludingGST * 12 * netProfitBeforeInvestorShareRate;
-        const annualInvestorShare = currentAnnualNetProfitBeforeInvestorShare * config.investorProfitShare;
-        
-        // Loop up to 10 years (120 months) for break-even calculation
-        for (let month = 1; month <= 120; month++) { 
-            const investorShareMonthlyAccrual = annualInvestorShare / 12;
-            cumulativeInvestorProfit += investorShareMonthlyAccrual;
-            
-            if (breakEvenMonth === -1 && cumulativeInvestorProfit >= config.totalInvestment) {
-                breakEvenMonth = month;
-            }
-
-            if (month % 12 === 0 && month <= 60) { // Only store up to 5 years for chart data
-                annualData.push(cumulativeInvestorProfit);
-            }
-        }
-
-        const finalCumulativeProfitForDisplay = annualData.length > 0 ? annualData[annualData.length - 1] : 0;
-
-        let breakEvenDisplay = '';
-        // Correction 4: Always format break-even as x years and y months
-        if (breakEvenMonth !== -1) {
-            const years = Math.floor(breakEvenMonth / 12);
-            const months = breakEvenMonth % 12;
-            breakEvenDisplay = `${years} years`;
-            if (months > 0) {
-                breakEvenDisplay += ` and ${months} months`;
-            }
-        } else {
-            // If breakEvenMonth is still -1 after 120 months (10 years), then it's beyond 10 years
-            breakEvenDisplay = 'Beyond 10 years'; 
-        }
-
-        return { profitData: annualData, breakEvenTime: breakEvenDisplay, cumulativeFinalProfit: finalCumulativeProfitForDisplay };
-    }
-
-    // --- ROI Calculator for the Common Presentation (Interactive Model Selector) ---
-    const roiProjectionCtxCommon = document.getElementById('roiProjectionChart'); 
-    let roiChartCommon;
-
-    function formatCurrency(value) {
-        // Formats values into Lakhs with 2 decimal places, adding '₹' prefix.
-        return `₹${(value / 100000).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Lakhs`;
-    }
-
-    function updateRoiChartCommon(modelType, salesScenarioKey) {
-        const modelConfig = ROI_MODELS_CONFIG[modelType];
-        const monthlyRevenue = modelConfig.salesScenarios[salesScenarioKey];
-        const result = calculateROI(modelType, monthlyRevenue);
-        
-        const breakEvenDisplayElement = document.getElementById('breakEvenDisplay');
-
-        if (breakEvenDisplayElement) {
-            breakEvenDisplayElement.textContent = result.breakEvenTime;
-        }
-
-        if (roiProjectionCtxCommon) { 
-            if (roiChartCommon) {
-                roiChartCommon.data.datasets[0].data = result.profitData;
-                roiChartCommon.update();
-            } else {
-                roiChartCommon = new Chart(roiProjectionCtxCommon.getContext('2d'), {
-                    type: 'line',
-                    data: {
-                        labels: ['Year 1', 'Year 2', 'Year 3', 'Year 4', 'Year 5'],
-                        datasets: [{
-                            label: 'Cumulative Investor Profit',
-                            data: result.profitData,
-                            fill: true,
-                            backgroundColor: 'rgba(225, 169, 49, 0.1)',
-                            borderColor: '#E1A931',
-                            borderWidth: 2,
-                            tension: 0.4,
-                            pointBackgroundColor: '#E1A931',
-                            pointRadius: 5
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false },
-                            tooltip: {
-                                callbacks: {
-                                    label: (context) => `Cumulative Profit: ${formatCurrency(context.raw)}`
-                                }
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: {
-                                    callback: (value) => `${formatCurrency(value).replace(' Lakhs', 'L')}` // Shorten "Lakhs" to "L" on y-axis
-                                }
-                            },
-                            x: {
-                                grid: {
-                                    display: false // Hide x-axis grid lines for cleaner look
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-        }
-    }
-
-    // Initial setup for the Common ROI Calculator: Updates sales buttons and triggers chart update
-    function updateScenarioButtons() {
-        const modelSelector = document.getElementById('modelSelector'); 
-        const selectedModel = modelSelector.value;
-        const scenarios = ROI_MODELS_CONFIG[selectedModel].salesScenarios;
-
-        const salesScenarioButtons = document.querySelectorAll('#salesScenarioButtons .tab-button');
-        
-        salesScenarioButtons[0].textContent = `Average Sales (₹${(scenarios.average / 100000).toFixed(0)} Lakhs)`;
-        salesScenarioButtons[0].dataset.scenario = 'average';
-        salesScenarioButtons[1].textContent = `Medium Sales (₹${(scenarios.medium / 100000).toFixed(0)} Lakhs)`;
-        salesScenarioButtons[1].dataset.scenario = 'medium';
-        salesScenarioButtons[2].textContent = `High Sales (₹${(scenarios.high / 100000).toFixed(0)} Lakhs)`;
-        salesScenarioButtons[2].dataset.scenario = 'high';
-
-        // Set default active to average and update chart
-        salesScenarioButtons.forEach(btn => btn.classList.remove('active'));
-        salesScenarioButtons[0].classList.add('active');
-        updateRoiChartCommon(selectedModel, 'average');
-    }
-
 </script>
 </body>
 </html>
